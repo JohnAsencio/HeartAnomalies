@@ -32,8 +32,12 @@ def train_and_evaluate_sklearn(training_data, test_data):
     # Evaluate the model
     accuracy = accuracy_score(y_test, y_pred)
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-    true_negative_rate = tn / (tn + fp)
-    true_positive_rate = tp / (tp + fn)
+    if tn + fp != 0:
+        true_negative_rate = tn / (tn + fp)
+        true_positive_rate = tp / (tp + fn)
+    else:
+        true_negative_rate = 0.0
+        true_positive_rate = 0.0
 
     return accuracy, true_negative_rate, true_positive_rate
 

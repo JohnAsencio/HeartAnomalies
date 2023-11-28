@@ -6,35 +6,38 @@ from fractions import Fraction
 def load_data(file_path):
     data = []
     with open(file_path, 'r') as file:
-        csv_reader = csv.reader(file)
-        for row in csv_reader:
+        csvReader = csv.reader(file)
+        for row in csvReader:
             label = int(row[0])
             features = list(map(int, row[1:]))
             data.append({'c': label, 'f': features})
+
+   # print(data)
     return data
 
-def naive_bayes_learner(trainingData):
+def naive_bayes(trainingData):
     instanceClassification = 2  
     numFeatures = len(trainingData[0]['f'])
 
-    # Initialize counts
     F = np.zeros((instanceClassification, numFeatures))
     N = np.zeros(instanceClassification)
 
-    # Iterate over each training instance
     for instance in trainingData:
+      #  print(instance)
         N[instance['c']] += 1
         for j in range(numFeatures):
             if instance['f'][j] == 1:
                 F[instance['c'], j] += 1
 
+   # print(N, F)
     return N, F
 
 def compute_likelihood(instance, F, N):
     L = np.zeros(len(N))
+# print(instance)
 
     for i in range(len(N)):
-        L[i] = np.log(N[i] + 0.5) - np.log(np.sum(N[0]) + np.sum(N[1]) + 0.5)
+        L[i] = np.log(N[i] + 0.5) - np.log(N[0] + N[1] + 0.5)
         for j in range(len(instance['f'])):
             s = F[i, j] 
             if instance['f'][j] == 0:
@@ -59,40 +62,62 @@ def evaluate_naive_bayes(testData, N, F):
             correct += 1
             if instance['c'] == 0:
                 trueNegative += 1
-            else:
+            elif instance['c'] == 1:
                 truePositive += 1
 
-    print(truePositive, 
-          len(testData),
-          trueNegative)
-
+  #  print(correct, trueNegative, truePositive, len(testData))
     accuracy = correct / len(testData)
     trueNegativeRate = trueNegative / len(testData)
     truePositiveRate = truePositive / len(testData)
 
     return accuracy, trueNegativeRate, truePositiveRate
 
+def k_fold_cross_validation(data):
+    k = 5
+    np.random.shuffle(data)
+    foldSize = len(data) // k
+    accuracies = []
+    tnRates = []
+    tpRates = []
+
+    for i in range(k):
+        start = i * foldSize
+        end = (i + 1) * foldSize
+        testData = data[start:end]
+    #    print(test_data, i, '\n')
+        trainingData = data[:start] + data[end:]
+       # print(start, end)
+
+    ##    print("training data: ", training_data, '\n Test: ', test_data, '\n', i, '\n')
+
+        N, F = naive_bayes(trainingData)
+        accuracy, tnRate, tpRate = evaluate_naive_bayes(testData, N, F)
+
+        accuracies.append(accuracy)
+        tnRates.append(tnRate)
+        tpRates.append(tpRate)
+
+    avgAccuracy = np.mean(accuracies)
+    avgTnRate = np.mean(tnRates)
+    avgTpRate = np.mean(tpRates)
+
+    return avgAccuracy, avgTnRate, avgTpRate
+
 def main():
-    if len(sys.argv) != 3:
-        print("You must input a test file and a training file")
+    if len(sys.argv) != 2:
+        print("You must input a data file")
         sys.exit(1)
 
-    trainingDataPath = sys.argv[1]
-    testDataPath = sys.argv[2]
+    dataPath = sys.argv[1]
 
-    # Load data from CSV files
-    trainingData = load_data(trainingDataPath)
-    testData = load_data(testDataPath)
+    data = load_data(dataPath)
 
-    N, F = naive_bayes_learner(trainingData)
+    avgAccuracy, avgTnRate, avgTpRate = k_fold_cross_validation(data)
 
-    # Evaluate the model on the test set
-    accuracy, trueNegativeRate, truePositiveRate = evaluate_naive_bayes(testData, N, F)
+    print(f'Accuracy: {Fraction(avgAccuracy).limit_denominator(200)}({avgAccuracy:.2f}) '
+          f'True Negative Rate: {Fraction(avgTnRate).limit_denominator(200)}({avgTnRate:.2f}) '
+          f'True Positive Rate: {Fraction(avgTpRate).limit_denominator(200)}({avgTpRate:.2f})')
 
-    # Print the results
-    print(f'orig {Fraction(accuracy).limit_denominator(200)}({accuracy:.2f}) '
-          f'{Fraction(trueNegativeRate).limit_denominator(200)}({trueNegativeRate:.2f}) '
-          f'{Fraction(truePositiveRate).limit_denominator(200)}({truePositiveRate:.2f})')
 
 if __name__ == "__main__":
     main()
