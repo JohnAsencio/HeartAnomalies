@@ -54,6 +54,10 @@ def evaluate_naive_bayes(testData, N, F):
     correct = 0
     trueNegative = 0
     truePositive = 0
+   # PP = 0
+   # PN = 0
+    totP = 0
+    totN = 0
 
     for instance in testData:
         L = compute_likelihood(instance, F, N)
@@ -64,11 +68,17 @@ def evaluate_naive_bayes(testData, N, F):
                 trueNegative += 1
             elif instance['c'] == 1:
                 truePositive += 1
+        
+        if instance['c'] == 0:
+            totP += 1
+        elif instance['c'] == 1:
+            totN += 1
+    
 
   #  print(correct, trueNegative, truePositive, len(testData))
     accuracy = correct / len(testData)
-    trueNegativeRate = trueNegative / len(testData)
-    truePositiveRate = truePositive / len(testData)
+    trueNegativeRate = trueNegative / totP
+    truePositiveRate = truePositive / totN
 
     return accuracy, trueNegativeRate, truePositiveRate
 
