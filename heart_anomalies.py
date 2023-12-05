@@ -12,7 +12,6 @@ def load_data(file_path):
             features = list(map(int, row[1:]))
             data.append({'c': label, 'f': features})
 
-   # print(data)
     return data
 
 def naive_bayes(trainingData):
@@ -23,18 +22,15 @@ def naive_bayes(trainingData):
     N = np.zeros(instanceClassification)
 
     for instance in trainingData:
-      #  print(instance)
         N[instance['c']] += 1
         for j in range(numFeatures):
             if instance['f'][j] == 1:
                 F[instance['c'], j] += 1
 
-   # print(N, F)
     return N, F
 
 def compute_likelihood(instance, F, N):
     L = np.zeros(len(N))
-# print(instance)
 
     for i in range(len(N)):
         L[i] = np.log(N[i] + 0.5) - np.log(N[0] + N[1] + 0.5)
@@ -54,8 +50,6 @@ def evaluate_naive_bayes(testData, N, F):
     correct = 0
     trueNegative = 0
     truePositive = 0
-   # PP = 0
-   # PN = 0
     totP = 0
     totN = 0
 
@@ -75,7 +69,6 @@ def evaluate_naive_bayes(testData, N, F):
             totN += 1
     
 
-  #  print(correct, trueNegative, truePositive, len(testData))
     accuracy = correct / len(testData)
     trueNegativeRate = trueNegative / totP
     truePositiveRate = truePositive / totN
@@ -94,11 +87,7 @@ def k_fold_cross_validation(data):
         start = i * foldSize
         end = (i + 1) * foldSize
         testData = data[start:end]
-    #    print(test_data, i, '\n')
         trainingData = data[:start] + data[end:]
-       # print(start, end)
-
-    ##    print("training data: ", training_data, '\n Test: ', test_data, '\n', i, '\n')
 
         N, F = naive_bayes(trainingData)
         accuracy, tnRate, tpRate = evaluate_naive_bayes(testData, N, F)
