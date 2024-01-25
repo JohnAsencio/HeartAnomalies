@@ -1,4 +1,4 @@
-# Octopawn solver
+# Heart Anomalies
 ### John Asencio
 
 ### Purpose of this program
